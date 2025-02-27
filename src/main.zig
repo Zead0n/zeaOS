@@ -55,7 +55,10 @@ export fn _start() callconv(.Naked) noreturn {
     );
 }
 
-fn kmain() callconv(.C) void {
+fn kmain() callconv(.C) noreturn {
     console.initialize();
     console.puts("Hello ZeaOS!");
+    while (true) {
+        asm volatile ("hlt");
+    }
 }
