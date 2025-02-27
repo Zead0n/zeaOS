@@ -24,7 +24,7 @@ pub fn build(b: *std.Build) void {
 
     const kernel_options = std.Build.ExecutableOptions{
         .name = "kernel.elf",
-        .root_source_file = b.path("src/main.zig"),
+        .root_source_file = b.path("src/kmain.zig"),
         .target = b.resolveTargetQuery(target_query),
         .optimize = optimize,
         .code_model = .kernel,
