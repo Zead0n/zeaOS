@@ -13,15 +13,23 @@ pub fn build(b: *std.Build) void {
     enabled_features.addFeature(@intFromEnum(std.Target.x86.Feature.soft_float));
 
     const target_query = std.Target.Query{
-        .cpu_arch = std.Target.Cpu.Arch.x86,
-        .os_tag = std.Target.Os.Tag.freestanding,
-        .abi = std.Target.Abi.none,
+        .cpu_arch = .x86,
+        .os_tag = .freestanding,
+        .abi = .none,
         .cpu_features_sub = disabled_features,
         .cpu_features_add = enabled_features,
     };
+
     const optimize = b.standardOptimizeOption(.{});
 
-    const kernel = b.addExecutable(.{ .name = "kernel.elf", .root_source_file = b.path("src/main.zig"), .target = b.resolveTargetQuery(target_query), .optimize = optimize, .code_model = .kernel });
+    const kernel_options = std.Build.ExecutableOptions{
+        .name = "kernel.elf",
+        .root_source_file = b.path("src/main.zig"),
+        .target = b.resolveTargetQuery(target_query),
+        .optimize = optimize,
+        .code_model = .kernel,
+    };
+    const kernel = b.addExecutable(kernel_options);
 
     kernel.setLinkerScript(b.path("src/linker.ld"));
     b.installArtifact(kernel);
