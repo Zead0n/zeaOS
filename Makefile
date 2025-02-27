@@ -9,7 +9,7 @@ iso: build
 	rm -rf isodir
 
 run: iso
-	qemu-system-i386 -cdrom kernel.iso
+	qemu-system-i386 -cdrom zeaOS.iso
 
 clean:
 	rm -rf isodir; \
