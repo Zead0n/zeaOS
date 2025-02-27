@@ -10,3 +10,8 @@ iso: build
 
 run: iso
 	qemu-system-i386 -cdrom kernel.iso
+
+clean:
+	rm -rf isodir; \
+	rm -rf zig-out; \
+	rm -f kernel.iso
