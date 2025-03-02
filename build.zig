@@ -1,5 +1,9 @@
 const std = @import("std");
 
+const targets: []const std.Target.Query = &.{
+    .{ .cpu_arch = .x86, .os_tag = .freestanding, .abi = .none },
+};
+
 pub fn build(b: *std.Build) void {
     var disabled_features = std.Target.Cpu.Feature.Set.empty;
     var enabled_features = std.Target.Cpu.Feature.Set.empty;
