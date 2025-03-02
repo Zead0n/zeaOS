@@ -30,9 +30,6 @@ pub fn build(b: *std.Build) void {
         .code_model = .kernel,
     });
 
-    // const test_console = b.addCheckFile(b.path("kernel/arch/x86/tty.zig"), .{});
-    // b.addModule("tty", .{ .root_source_file = b.path("kernel/arch/x86/tty.zig") });
-
     kernel.setLinkerScript(b.path("kernel/linker.ld"));
     b.installArtifact(kernel);
 
