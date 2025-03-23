@@ -1,1 +1,1 @@
-# ZeaOS
+# zeaOS
