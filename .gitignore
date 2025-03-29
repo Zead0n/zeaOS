@@ -13,4 +13,5 @@
 **/docgen_tmp/
 
 # ISO directory
-**/isodir/
+**/isogrub/
+**/bin/
