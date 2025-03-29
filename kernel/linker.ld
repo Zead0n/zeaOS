@@ -4,7 +4,6 @@ SECTIONS {
    . = 2M;
 
    .text : ALIGN(4K) {
-       /* We need to specify KEEP to prevent the linker from garbage-collecting the multiboot section. */
        KEEP(*(.multiboot))
        *(.text)
    }
