@@ -1,7 +1,5 @@
 const std = @import("std");
 
-const options = @import("build/options.zig");
-
 pub fn build(b: *std.Build) void {
     const zeaTarget = b.option(ZeaTarget, "arch", "Cpu architecture (Defaults to x86)") orelse ZeaTarget.x86;
 
@@ -10,7 +8,7 @@ pub fn build(b: *std.Build) void {
 
     const exeOptions = std.Build.ExecutableOptions{
         .name = "kernel.elf",
-        .root_source_file = b.path("kernel/kmain.zig"),
+        .root_source_file = b.path("kernel/kernel.zig"),
         .target = target,
         .optimize = optimize,
         .code_model = .kernel,
@@ -18,7 +16,7 @@ pub fn build(b: *std.Build) void {
 
     const kernel = b.addExecutable(exeOptions);
 
-    kernel.setLinkerScript(b.path("kernel/linker.ld"));
+    kernel.setLinkerScript(b.path("kernel/kernel.ld"));
     b.installArtifact(kernel);
 
     const kernel_step = b.step("kernel", "Build the kernel");
@@ -28,7 +26,7 @@ pub fn build(b: *std.Build) void {
 const ZeaTarget = enum {
     x86,
 
-    pub fn getTargetQuery(self: ZeaTarget) std.Target.Query {
+    pub fn getTargetQuery(self: @This()) std.Target.Query {
         const x86 = blk: {
             var disabled_features = std.Target.Cpu.Feature.Set.empty;
             var enabled_features = std.Target.Cpu.Feature.Set.empty;
