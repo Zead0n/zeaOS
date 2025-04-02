@@ -21,7 +21,7 @@ pub const ConsoleColors = enum(u8) {
     White = 15,
 };
 
-pub var color = vgaEntryColor(ConsoleColors.LightGray, ConsoleColors.Black);
+var color = vgaEntryColor(ConsoleColors.LightGray, ConsoleColors.Black);
 
 pub fn setColor(new_color: u8) void {
     color = new_color;
