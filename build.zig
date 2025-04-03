@@ -17,21 +17,34 @@ pub fn build(b: *std.Build) void {
         .root_module = boot_mod,
     });
 
+    const boot_filename = "boot.bin";
+
     const boot_bin = b.addObjCopy(boot_obj.getEmittedBin(), .{
         .format = .bin,
-        .basename = "boot.bin",
+        .basename = boot_filename,
     });
 
-    const boot_file = b.addInstallBinFile(boot_bin.getOutput(), "boot.bin");
+    const boot_file = b.addInstallBinFile(boot_bin.getOutput(), boot_filename);
 
-    const boot_step = b.step("bootload", "Boot stuff");
+    const boot_step = b.step("bootloader", "Boot stuff");
     boot_step.dependOn(&boot_file.step);
+
+    const boot_path = b.getInstallPath(boot_file.dir, boot_filename);
+
+    const qemu_cmd = b.addSystemCommand(&[_][]const u8{
+        "qemu-system-x86_64",
+        boot_path,
+    });
+    qemu_cmd.step.dependOn(&boot_file.step);
+
+    const qemu_step = b.step("qemu", "Run qemu");
+    qemu_step.dependOn(&qemu_cmd.step);
 }
 
 const ZeaTarget = enum {
     x86,
 
-    pub fn getTargetQuery(self: @This()) std.Target.Query {
+    pub fn getTargetQuery(self: ZeaTarget) std.Target.Query {
         const x86 = blk: {
             var disabled_features = std.Target.Cpu.Feature.Set.empty;
             var enabled_features = std.Target.Cpu.Feature.Set.empty;
