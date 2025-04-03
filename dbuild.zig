@@ -6,26 +6,23 @@ pub fn build(b: *std.Build) void {
     const target = b.resolveTargetQuery(zeaTarget.getTargetQuery());
     const optimize = b.standardOptimizeOption(.{});
 
-    const boot_mod = b.addModule("boot", .{
+    const exeOptions = std.Build.ExecutableOptions{
+        .name = "kernel.elf",
+        .root_source_file = b.path("kernel/kernel.zig"),
         .target = target,
         .optimize = optimize,
-    });
-    boot_mod.addAssemblyFile(b.path("boot/x86/stage1/boot.S"));
+        .code_model = .kernel,
+    };
 
-    const boot_obj = b.addObject(.{
-        .name = "boot.o",
-        .root_module = boot_mod,
-    });
+    const kernel = b.addExecutable(exeOptions);
 
-    const boot_bin = b.addObjCopy(boot_obj.getEmittedBin(), .{
-        .format = .bin,
-        .basename = "boot.bin",
-    });
+    kernel.setLinkerScript(b.path("kernel/kernel.ld"));
+    b.installArtifact(kernel);
 
-    const boot_file = b.addInstallBinFile(boot_bin.getOutput(), "boot.bin");
+    kernel.addAssemblyFile("boot/x86/stage1/boot.S");
 
-    const boot_step = b.step("bootload", "Boot stuff");
-    boot_step.dependOn(&boot_file.step);
+    const kernel_step = b.step("kernel", "Build the kernel");
+    kernel_step.dependOn(&kernel.step);
 }
 
 const ZeaTarget = enum {
