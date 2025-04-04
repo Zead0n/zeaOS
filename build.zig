@@ -1,75 +1,85 @@
 const std = @import("std");
 
 pub fn build(b: *std.Build) void {
-    const zeaTarget = b.option(ZeaTarget, "arch", "Cpu architecture (Defaults to x86)") orelse ZeaTarget.x86;
+    const zea = b.option(Zea, "arch", "Cpu architecture (Defaults to x86)") orelse Zea.x86;
 
-    const target = b.resolveTargetQuery(zeaTarget.getTargetQuery());
-    const optimize = b.standardOptimizeOption(.{});
+    const kernel = zea.buildKernel(b);
+    b.installArtifact(kernel);
+    const kernel_step = b.step("kernel", "Build the kernel");
+    kernel_step.dependOn(&kernel.step);
 
-    const boot_mod = b.addModule("boot", .{
-        .target = target,
-        .optimize = optimize,
-    });
-    boot_mod.addAssemblyFile(b.path("boot/x86/stage1/boot.S"));
+    const grub_iso = buildIso(b, kernel);
+    const grub_step = b.step("grub", "Build grub iso");
+    grub_step.dependOn(&grub_iso.step);
 
-    const boot_obj = b.addObject(.{
-        .name = "boot.o",
-        .root_module = boot_mod,
-    });
-
-    const boot_filename = "boot.bin";
-
-    const boot_bin = b.addObjCopy(boot_obj.getEmittedBin(), .{
-        .format = .bin,
-        .basename = boot_filename,
-    });
-
-    const boot_file = b.addInstallBinFile(boot_bin.getOutput(), boot_filename);
-
-    const boot_step = b.step("bootloader", "Boot stuff");
-    boot_step.dependOn(&boot_file.step);
-
-    const boot_path = b.getInstallPath(boot_file.dir, boot_filename);
-
-    const qemu_cmd = b.addSystemCommand(&[_][]const u8{
-        "qemu-system-x86_64",
-        boot_path,
-    });
-    qemu_cmd.step.dependOn(&boot_file.step);
-
-    const qemu_step = b.step("qemu", "Run qemu");
+    const qemu_cmd = b.addSystemCommand(&.{ "qemu-system-x86_64", "-kernel" });
+    qemu_cmd.addArtifactArg(kernel);
+    qemu_cmd.step.dependOn(&kernel.step);
+    const qemu_step = b.step("qemu", "Build and run the kernel in qemu");
     qemu_step.dependOn(&qemu_cmd.step);
 }
 
-const ZeaTarget = enum {
+pub fn buildIso(b: *std.Build, kernel: *std.Build.Step.Compile) *std.Build.Step.InstallFile {
+    const grub_kernel = b.pathJoin(&.{ "boot", kernel.out_filename });
+    const gen_grub =
+        \\ menuentry "ZeaOS" {{
+        \\     multiboot /{s}
+        \\ }}
+    ;
+
+    const boot_dir = b.addWriteFiles();
+    _ = boot_dir.addCopyFile(kernel.getEmittedBin(), grub_kernel);
+    _ = boot_dir.add(b.pathJoin(&.{ "boot", "grub", "grub.cfg" }), b.fmt(gen_grub, .{grub_kernel}));
+
+    const grub_iso_cmd = b.addSystemCommand(&.{"grub-mkrescue"});
+    const iso_file = grub_iso_cmd.addPrefixedOutputFileArg("--output=", "zeaos.iso");
+    grub_iso_cmd.addDirectoryArg(boot_dir.getDirectory());
+    grub_iso_cmd.step.dependOn(&boot_dir.step);
+
+    return b.addInstallFile(iso_file, "zeaos.iso");
+}
+
+const Zea = enum {
     x86,
 
-    pub fn getTargetQuery(self: ZeaTarget) std.Target.Query {
-        const x86 = blk: {
-            var disabled_features = std.Target.Cpu.Feature.Set.empty;
-            var enabled_features = std.Target.Cpu.Feature.Set.empty;
+    pub fn buildKernel(self: Zea, b: *std.Build) *std.Build.Step.Compile {
+        const target = b.resolveTargetQuery(self.getTargetQuery());
+        const optimize = b.standardOptimizeOption(.{});
 
-            disabled_features.addFeature(@intFromEnum(std.Target.x86.Feature.mmx));
-            disabled_features.addFeature(@intFromEnum(std.Target.x86.Feature.sse));
-            disabled_features.addFeature(@intFromEnum(std.Target.x86.Feature.sse2));
-            disabled_features.addFeature(@intFromEnum(std.Target.x86.Feature.avx));
-            disabled_features.addFeature(@intFromEnum(std.Target.x86.Feature.avx2));
+        const kernel = b.addExecutable(.{
+            .name = "kerenel.elf",
+            .root_source_file = b.path("kernel/kernel.zig"),
+            .target = target,
+            .optimize = optimize,
+            .code_model = .kernel,
+        });
+        kernel.setLinkerScript(b.path("kernel/linker.ld"));
 
-            enabled_features.addFeature(@intFromEnum(std.Target.x86.Feature.soft_float));
+        return kernel;
+    }
 
-            break :blk std.Target.Query{
-                .cpu_arch = .x86,
-                .os_tag = .freestanding,
-                .abi = .none,
-                .cpu_features_sub = disabled_features,
-                .cpu_features_add = enabled_features,
-            };
+    fn getTargetQuery(self: Zea) std.Target.Query {
+        return switch (self) {
+            .x86 => blk: {
+                var disabled_features = std.Target.Cpu.Feature.Set.empty;
+                var enabled_features = std.Target.Cpu.Feature.Set.empty;
+
+                disabled_features.addFeature(@intFromEnum(std.Target.x86.Feature.mmx));
+                disabled_features.addFeature(@intFromEnum(std.Target.x86.Feature.sse));
+                disabled_features.addFeature(@intFromEnum(std.Target.x86.Feature.sse2));
+                disabled_features.addFeature(@intFromEnum(std.Target.x86.Feature.avx));
+                disabled_features.addFeature(@intFromEnum(std.Target.x86.Feature.avx2));
+
+                enabled_features.addFeature(@intFromEnum(std.Target.x86.Feature.soft_float));
+
+                break :blk std.Target.Query{
+                    .cpu_arch = .x86,
+                    .os_tag = .freestanding,
+                    .abi = .none,
+                    .cpu_features_sub = disabled_features,
+                    .cpu_features_add = enabled_features,
+                };
+            },
         };
-
-        const targetQuery = switch (self) {
-            .x86 => x86,
-        };
-
-        return targetQuery;
     }
 };
