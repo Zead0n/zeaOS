@@ -1,23 +1,20 @@
-const console = @import("io/console.zig");
+const console = @import("console.zig");
+
+const ALIGN = 1 << 0;
+const MEMINFO = 1 << 1;
+const MAGIC = 0x1BADB002;
+const FLAGS = ALIGN | MEMINFO;
 
 const MultibootHeader = packed struct {
-    magic: u32,
-    flags: u32,
-    checksum: u32,
-    padding: u32 = 0,
+    magic: i32 = MAGIC,
+    flags: i32,
+    checksum: i32,
+    padding: i32 = 0,
 };
 
-export const multiboot_header align(4) linksection(".multiboot") = multiboot: {
-    const ALIGN = 1 << 0;
-    const MEMINFO = 1 << 1;
-    const MAGIC = 0x1BADB002;
-    const FLAGS = ALIGN | MEMINFO;
-
-    break :multiboot MultibootHeader{
-        .magic = MAGIC,
-        .flags = FLAGS,
-        .checksum = -(MAGIC + FLAGS),
-    };
+export const multiboot_header align(4) linksection(".multiboot") = MultibootHeader{
+    .flags = FLAGS,
+    .checksum = -(MAGIC + FLAGS),
 };
 
 var stack_bytes: [16 * 1024]u8 align(16) linksection(".bss") = undefined;
