@@ -4,9 +4,6 @@ pub fn build(b: *std.Build) void {
     const arch = b.option(Arch, "arch", "Cpu architecture (Defaults to x86_64)") orelse Arch.x86_64;
     const optimize = b.standardOptimizeOption(.{});
 
-    const limine_zig = b.dependency("limine_zig", .{ .api_revision = 3 });
-    const limint_module = limine_zig.module("limine");
-
     const kernel_module = b.createModule(.{
         .root_source_file = b.path("kernel/kernel.zig"),
         .target = b.resolveTargetQuery(arch.getTargetQuery()),
@@ -19,8 +16,6 @@ pub fn build(b: *std.Build) void {
             kernel_module.code_model = .kernel;
         },
     }
-
-    kernel_module.addImport("limine", limint_module);
 
     const kernel = b.addExecutable(.{
         .name = "kernel",
