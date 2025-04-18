@@ -1,12 +1,10 @@
-OUTPUT_FORMAT("binary")
-phys = 0x7c00;
+ENTRY(_start)
 
 SECTIONS {
     . = 0x7c00;
 
     .text :
     {
-        code = .;
         *(.text)
     }
 
@@ -17,25 +15,12 @@ SECTIONS {
 
     .data BLOCK(1) : ALIGN(1)
     {
-        data = .;
+        *(.data)
     }
 
     .bss BLOCK(1) : ALIGN(1)
     {
-        PROVIDE(bss_start = .);
-        bss = .;
         *(COMMON)
         *(.bss)
-        *(.stack)
-        PROVIDE(bss_end = .);
-    }
-
-    end = .;
-
-    /DISCARD/ :
-    {
-        *(.comment)
-        *(.eh_frame)
-        *(.note.gnu.build-id)
     }
 }
