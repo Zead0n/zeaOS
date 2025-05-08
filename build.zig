@@ -37,7 +37,7 @@ pub fn build(b: *std.Build) void {
 const Arch = enum {
     x86,
 
-    pub fn toStdArch(self: @This()) std.Target.Cpu.Arch {
+    pub fn toStdArch(self: Arch) std.Target.Cpu.Arch {
         return switch (self) {
             .x86 => .x86,
         };
