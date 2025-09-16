@@ -15,3 +15,7 @@
 # ISO directory
 **/isogrub/
 **/bin/
+
+# direnv
+**/.direnv/
+**/.envrc
