@@ -14,15 +14,18 @@ pub fn build(b: *std.Build) void {
     const bootloader = builder.buildBoot(b);
     const kernel = builder.buildKernel(b);
 
-    const bootloader_install = b.addInstallBinFile(bootloader.getOutput(), bootloader.basename);
+    const bootloader_install = b.addInstallBinFile(bootloader.getEmittedBin(), bootloader.name);
     const kernel_install = b.addInstallArtifact(kernel, .{});
 
     const install_step = b.getInstallStep();
     install_step.dependOn(&bootloader_install.step);
     install_step.dependOn(&kernel_install.step);
 
+    // Bootloader step
     const bootloader_step = b.step("bootloader", "Build the bootloader");
     bootloader_step.dependOn(&bootloader_install.step);
+
+    // Kernel step
     const kernel_step = b.step("kernel", "Build the kernel");
     kernel_step.dependOn(&kernel_install.step);
 }

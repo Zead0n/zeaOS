@@ -4,7 +4,7 @@ pub const Builder = struct {
     target: std.Build.ResolvedTarget,
     optimize: std.builtin.OptimizeMode,
 
-    pub fn buildBoot(self: Builder, b: *std.Build) *std.Build.Step.ObjCopy {
+    pub fn buildBoot(self: Builder, b: *std.Build) *std.Build.Step.Compile {
         const boot_dir = b.path("boot");
 
         const boot_module = b.createModule(.{
@@ -13,16 +13,13 @@ pub const Builder = struct {
         });
         boot_module.addAssemblyFile(boot_dir.path(b, "boot.S"));
 
-        const boot_obj = b.addObject(.{
-            .name = "boot.o",
+        const boot_bin = b.addObject(.{
+            .name = "boot.bin",
             .root_module = boot_module,
         });
-        boot_obj.setLinkerScript(boot_dir.path(b, "link.ld"));
+        boot_bin.setLinkerScript(boot_dir.path(b, "link.ld"));
 
-        return b.addObjCopy(boot_obj.getEmittedBin(), .{
-            .basename = "boot.bin",
-            .format = .bin,
-        });
+        return boot_bin;
     }
 
     pub fn buildKernel(self: Builder, b: *std.Build) *std.Build.Step.Compile {
