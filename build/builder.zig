@@ -4,14 +4,14 @@ pub const Builder = struct {
     target: std.Build.ResolvedTarget,
     optimize: std.builtin.OptimizeMode,
 
-    pub fn buildBoot(self: Builder, b: *std.Build) *std.Build.Step.Compile {
+    pub fn buildBootloader(self: Builder, b: *std.Build) *std.Build.Step.Compile {
         const boot_dir = b.path("boot");
 
         const boot_module = b.createModule(.{
             .target = self.target,
             .optimize = self.optimize,
         });
-        boot_module.addAssemblyFile(boot_dir.path(b, "boot.S"));
+        boot_module.addAssemblyFile(boot_dir.path(b, "boot.s"));
 
         const boot_bin = b.addObject(.{
             .name = "boot.bin",
