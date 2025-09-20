@@ -1,6 +1,8 @@
 const std = @import("std");
-const Arch = @import("./build_util/arch.zig").Arch;
-const Builder = @import("./build_util/builder.zig").Builder;
+const Arch = @import("build/arch.zig").Arch;
+const Builder = @import("build/builder.zig").Builder;
+
+const flate = std.compress.flate;
 
 pub fn build(b: *std.Build) void {
     const arch = b.option(Arch, "arch", "Cpu architecture (Defaults to x86)") orelse Arch.x86;
@@ -11,7 +13,7 @@ pub fn build(b: *std.Build) void {
         .optimize = optimize,
     };
 
-    const bootloader = builder.buildBoot(b);
+    const bootloader = builder.buildBootloader(b);
     const kernel = builder.buildKernel(b);
 
     const bootloader_install = b.addInstallBinFile(bootloader.getEmittedBin(), bootloader.name);
