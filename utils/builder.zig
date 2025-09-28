@@ -36,9 +36,8 @@ pub const Builder = struct {
         const iso_name = "zeaOS.iso";
 
         // Prep grub paths
-        const boot_dir_name = "boot";
-        const grub_cfg_path = b.pathJoin(&.{ boot_dir_name, "grub", "grub.cfg" });
-        const grub_kernel_path = b.pathJoin(&.{ boot_dir_name, kernel.name });
+        const grub_cfg_path = b.pathJoin(&.{ "boot", "grub", "grub.cfg" });
+        const grub_kernel_path = b.pathJoin(&.{ "boot", kernel.name });
 
         // Format grub.cfg content
         const grub_cfg = b.fmt(
