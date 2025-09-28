@@ -19,7 +19,7 @@ export const multiboot_header align(4) linksection(".multiboot") = MultibootHead
 
 var stack_bytes: [16 * 1024]u8 align(16) linksection(".bss") = undefined;
 
-export fn _start() callconv(.Naked) noreturn {
+export fn _start() callconv(.naked) noreturn {
     asm volatile (
         \\ movl %[stack_top], %%esp
         \\ movl %%esp, %%ebp
