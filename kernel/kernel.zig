@@ -30,7 +30,7 @@ export fn _start() callconv(.naked) noreturn {
     );
 }
 
-fn kmain() callconv(.C) noreturn {
+fn kmain() callconv(.c) noreturn {
     console.initialize();
     console.puts("Hello ZeaOS!");
     while (true) {}
