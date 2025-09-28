@@ -1,8 +1,9 @@
 const std = @import("std");
-const Arch = @import("build/arch.zig").Arch;
-const Builder = @import("build/builder.zig").Builder;
+const arch_util = @import("build/arch.zig");
+const builder_util = @import("build/builder.zig");
 
-const flate = std.compress.flate;
+const Arch = arch_util.Arch;
+const Builder = builder_util.Builder;
 
 pub fn build(b: *std.Build) void {
     const arch = b.option(Arch, "arch", "Cpu architecture (Defaults to x86)") orelse Arch.x86;
