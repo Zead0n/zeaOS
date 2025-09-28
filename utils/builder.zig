@@ -60,7 +60,7 @@ pub const Builder = struct {
         // NOTE: xorriso spits out a stderr when successful, we're just
         // going to ignore it if it matches this vvv
         grub_cmd.addCheck(.{
-            .expect_stderr_match = "RockRidge filesystem manipulator, libburnia project.",
+            .expect_stderr_match = "completed successfully",
         });
 
         // Create Iso file
