@@ -5,19 +5,22 @@ pub const Builder = struct {
     optimize: std.builtin.OptimizeMode,
 
     pub fn buildBootloader(self: Builder, b: *std.Build) *std.Build.Step.Compile {
-        const boot_dir = b.path("boot");
+        const boot_dir = b.path("boot/x86");
 
-        const boot_module = b.createModule(.{
+        const first_stage_dir = boot_dir.path(b, "stage1");
+
+        const boot_mod = b.createModule(.{
             .target = self.target,
             .optimize = self.optimize,
+            .red_zone = false,
         });
-        boot_module.addAssemblyFile(boot_dir.path(b, "boot.s"));
+        boot_mod.addAssemblyFile(first_stage_dir.path(b, "boot.s"));
 
         const boot_bin = b.addExecutable(.{
-            .name = "boot.bin",
-            .root_module = boot_module,
+            .name = "bootloader.bin",
+            .root_module = boot_mod,
         });
-        boot_bin.setLinkerScript(boot_dir.path(b, "link.ld"));
+        boot_bin.setLinkerScript(first_stage_dir.path(b, "link.ld"));
 
         return boot_bin;
     }
