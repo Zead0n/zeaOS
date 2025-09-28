@@ -15,14 +15,14 @@ pub fn build(b: *std.Build) void {
     };
 
     const kernel = builder.buildKernel(b);
-
-    const kernel_install = b.addInstallArtifact(kernel, .{});
+    const iso = builder.buildGrubIso(b);
 
     // Kernel step
+    const kernel_install = b.addInstallArtifact(kernel, .{});
     const kernel_step = b.step("kernel", "Build the kernel");
     kernel_step.dependOn(&kernel_install.step);
 
     // Install step
     const install_step = b.getInstallStep();
-    install_step.dependOn(&kernel_install.step);
+    install_step.dependOn(&iso.step);
 }
