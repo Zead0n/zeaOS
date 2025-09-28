@@ -22,7 +22,7 @@ pub const Builder = struct {
         }
 
         const kernel = b.addExecutable(.{
-            .name = "kernel.elf",
+            .name = "kernel",
             .root_module = kernel_module,
         });
         kernel.setLinkerScript(kernel_dir.path(b, "linker.ld"));
